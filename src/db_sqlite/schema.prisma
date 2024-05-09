@@ -1,0 +1,225 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:coead_db.db"
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  name               String
+  email              String               @unique
+  password           String
+  avatar             String?
+  birthday           DateTime?
+  isActive           Boolean?             @default(true) @map("is_active")
+  deletedBy          String?              @map("deleted_by")
+  createdBy          String?              @map("created_by")
+  firstLogin         DateTime?            @map("first_login")
+  session            Session[]
+  telephone          Telephone[]
+  message            Message[]
+  orders             Order[]
+  userFavoriteCourses UserFavoriteCourses[]
+
+  @@map("users")
+}
+
+model PermissionGroups {
+  id        String                 @id @default(uuid())
+  createdAt DateTime               @default(now()) @map("created_at")
+  updatedAt DateTime               @updatedAt @map("updated_at")
+  name      String                 @unique
+  type      String                 @default("USER")
+  users     UserPermissionGroups[]
+  role      String                 @default("IS_CLIENT")
+
+  @@unique([type, role])
+  @@map("permission_groups")
+}
+
+model UserPermissionGroups {
+  id                String           @id @default(uuid())
+  createdAt         DateTime         @default(now()) @map("created_at")
+  deletedAt         DateTime?        @map("deleted_at")
+  userId            String?          @map("user_id")
+  permissionGroup   PermissionGroups @relation(fields: [permissionGroupId], references: [id])
+  permissionGroupId String           @map("permission_group_id")
+
+  @@unique([userId, permissionGroupId])
+  @@map("user_permission_groups")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  ip        String
+  userAgent String?  @map("user_agent")
+  country   String?
+  region    String?
+  language  String?
+  latitude  Float?
+  longitude Float?
+
+  @@map("sessions")
+}
+
+model Telephone {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  type      String
+  number    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+
+  @@map("telephones")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  isRead    Boolean  @default(false) @map("is_read")
+  title     String
+  content   String?
+  type      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+
+  @@map("message")
+}
+
+model Address {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  street       String
+  number       String
+  complement   String?
+  sector       String
+  city         String
+  state        String
+  country      String
+  zipCode      String     @map("zip_code")
+  latitude     Float?
+  longitude    Float?
+  restaurantId String     @map("restaurant_id")
+
+  @@unique([restaurantId], name: "restaurant_address_unique")
+  @@map("addresses")
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  name        String
+  description String?
+  price       Float
+  isActive    Boolean  @default(true) @map("is_active")
+  deletedBy   String?  @map("deleted_by")
+  createdBy   String?  @map("created_by")
+  categoryId  String   @map("category_id")
+  category    Category @relation(fields: [categoryId], references: [id])
+  order       CourseOrder[]
+
+  @@map("courses")
+
+}
+
+model Category {
+  id          String         @id @default(uuid())
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  name        String
+  description String?
+  courseId  String         @map("course_id")
+  course    Course[]
+  isActive    Boolean        @default(true) @map("is_active")
+  deletedBy   String?        @map("deleted_by")
+  createdBy   String?        @map("created_by")
+
+  @@map("categories")
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  content   String
+  score     Int
+  isActive  Boolean  @default(true) @map("is_active")
+  deletedBy String?  @map("deleted_by")
+  createdBy String?  @map("created_by")
+
+  @@map("notes")
+}
+
+model UserFavoriteCourses {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  deletedBy String?  @map("deleted_by")
+  createdBy String?  @map("created_by")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  courseId    String   @map("course_id")
+
+  @@map("user_favorite_courses")
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  description  String
+  status       String      @default("PENDING_PAYMENT")
+  totalAmount  Float
+  userId       String      @map("user_id")
+  user         User        @relation(fields: [userId], references: [id])
+  restaurantId String      @map("restaurant_id")
+  course      CourseOrder[]
+  payment      Payment[]
+
+  @@map("orders")
+}
+
+model CourseOrder {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  orderId     String   @map("order_id")
+  order       Order    @relation(fields: [orderId], references: [id])
+  courseId      String   @map("course_id")
+  course      Course   @relation(fields: [courseId], references: [id])
+  quantity    Int
+  totalAmount Float
+
+  @@map("course_orders")
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  orderId     String   @map("order_id")
+  order       Order    @relation(fields: [orderId], references: [id])
+  paymentType String   @map("payment_type")
+  status      String   @default("PENDING")
+  totalAmount Float
+  paymentDate DateTime @map("payment_date")
+
+  @@map("payments")
+}

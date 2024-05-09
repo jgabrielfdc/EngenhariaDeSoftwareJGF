@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "lib": ["dom", "es2015", "es2016", "es2017", "es2019"],
+    "allowJs": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["./src/*", "./dist/*", ""],
+    },
+    "typeRoots" : ["./node_modules/@types", "./src/@types"]
+  },
+  "include": ["src/**/*", "src/*", "**/src/**/*.ts", "jest/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
